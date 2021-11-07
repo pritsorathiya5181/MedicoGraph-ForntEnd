@@ -51,16 +51,11 @@ export function addRecords(value) {
   return function (dispatch, getState) {
     return new Promise(async (resolve, rejects) => {
       try {
-        let userToken = await AsyncStorage.getItem('USER_TOKEN');
-        dispatch({
-          type: 'ADD_RECORD',
-          subtype: 'loading',
-        });
-        console.log('user', userToken);
-
         var myHeaders = new Headers();
+        let userToken = await AsyncStorage.getItem('USER_TOKEN');
         myHeaders.append('x-auth-token', userToken);
         myHeaders.append('Content-Type', 'application/json');
+        console.log('value===', value);
 
         var requestOptions = {
           method: 'POST',
@@ -69,10 +64,12 @@ export function addRecords(value) {
           redirect: 'follow',
         };
 
-        fetch(`${BASE_URL}api/record/create`, requestOptions)
+        fetch(
+          'http://95a9-142-118-213-255.ngrok.io/api/record/create',
+          requestOptions,
+        )
           .then(response => response.json())
           .then(result => {
-            console.log('result==', result);
             dispatch({
               type: 'ADD_RECORD',
               subtype: 'success',
@@ -81,7 +78,6 @@ export function addRecords(value) {
             resolve(result);
           })
           .catch(error => {
-            console.log('recent error', error);
             rejects(error);
           });
       } catch (e) {
@@ -239,32 +235,25 @@ export function createFamily(value) {
   return function (dispatch, getState) {
     return new Promise(async (resolve, rejects) => {
       try {
-        let userToken = await AsyncStorage.getItem('USER_TOKEN');
-        dispatch({
-          type: 'CREATE_FAMILY',
-          subtype: 'loading',
-        });
-
         var myHeaders = new Headers();
+        let userToken = await AsyncStorage.getItem('USER_TOKEN');
         myHeaders.append('x-auth-token', userToken);
         myHeaders.append('Content-Type', 'application/json');
-
-        var raw = JSON.stringify({
-          father: value.father,
-          mother: value.mother,
-        });
 
         var requestOptions = {
           method: 'POST',
           headers: myHeaders,
-          body: raw,
+          body: value,
           redirect: 'follow',
         };
 
-        fetch(`${BASE_URL}patient/create`, requestOptions)
+        fetch(
+          'https://medicograph.herokuapp.com/api/patient/create',
+          requestOptions,
+        )
           .then(response => response.json())
           .then(result => {
-            console.log('result==', result.success);
+            console.log(result);
             dispatch({
               type: 'CREATE_FAMILY',
               subtype: 'success',
@@ -273,7 +262,7 @@ export function createFamily(value) {
             resolve(result);
           })
           .catch(error => {
-            console.log('recent error', error);
+            console.log('error', error);
             rejects(error);
           });
       } catch (e) {
@@ -286,46 +275,41 @@ export function createFamily(value) {
   };
 }
 
-export function updateFamily() {
+export function updateFamily(value) {
   return function (dispatch, getState) {
     return new Promise(async (resolve, rejects) => {
       try {
-        let userToken = await AsyncStorage.getItem('USER_TOKEN');
         dispatch({
           type: 'UPDATE_FAMILY',
           subtype: 'loading',
         });
 
         var myHeaders = new Headers();
+        let userToken = await AsyncStorage.getItem('USER_TOKEN');
         myHeaders.append('x-auth-token', userToken);
         myHeaders.append('Content-Type', 'application/json');
-
-        var raw = JSON.stringify({
-          father: value.father,
-          mother: value.mother,
-          sibling: value.sibling,
-        });
 
         var requestOptions = {
           method: 'PUT',
           headers: myHeaders,
-          body: raw,
+          body: value,
           redirect: 'follow',
         };
 
-        fetch(`${BASE_URL}patient/update`, requestOptions)
+        fetch(`${BASE_URL}api/patient/update`, requestOptions)
           .then(response => response.json())
           .then(result => {
-            console.log('result==', result.success);
+            console.log(result);
             dispatch({
               type: 'UPDATE_FAMILY',
               subtype: 'success',
               updateFamily: result.data,
             });
+
             resolve(result);
           })
           .catch(error => {
-            console.log('recent error', error);
+            console.log('error', error);
             rejects(error);
           });
       } catch (e) {

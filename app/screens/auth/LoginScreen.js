@@ -113,7 +113,11 @@ class LoginScreen extends Component {
       .LOGINUSER(data)
       .then(res => {
         console.log('result====>', res);
-        this.props.navigation.navigate('First');
+        if (res.data.newUser) {
+          this.props.navigation.navigate('First');
+        } else {
+          this.props.navigation.navigate('Home');
+        }
       })
       .catch(err => {
         console.log('error===>', err);

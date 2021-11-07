@@ -29,7 +29,7 @@ export function SIGNUPUSER(value) {
         };
 
         fetch(`${CONSTANT.BASE_URL}api/auth/register`, requestOptions)
-          .then(response => response.text())
+          .then(response => response.json())
           .then(result => {
             console.log(result);
             if (result.success) {
@@ -40,8 +40,8 @@ export function SIGNUPUSER(value) {
               });
               resolve(result);
             } else {
-              Alert.alert(result.message);
-              rejects(result.message);
+              Alert.alert(result);
+              rejects(result);
             }
           })
           .catch(error => {
@@ -90,17 +90,19 @@ export function LOGINUSER(value) {
         fetch(`${CONSTANT.BASE_URL}api/auth/login`, requestOptions)
           .then(response => response.json())
           .then(result => {
-            console.log(result);
+            console.log('login==>', result);
             if (result.success) {
               console.log('user');
               AsyncStorage.setItem('USER_TOKEN', result.data.token);
+              dispatch({
+                type: 'LOGIN_USER',
+                subtype: 'success',
+                LoginUser: result.data,
+              });
+              resolve(result);
+            } else {
+              Alert.alert(result.message);
             }
-            dispatch({
-              type: 'LOGIN_USER',
-              subtype: 'success',
-              LoginUser: result.data,
-            });
-            resolve(result);
           })
           .catch(error => console.log('error', error));
       } catch (e) {
@@ -131,7 +133,9 @@ export function createPersonalInfo(value) {
         myHeaders.append('x-auth-token', userToken);
         myHeaders.append('Content-Type', 'application/json');
 
-        var raw = JSON.stringify(value);
+        var raw = JSON.stringify({
+          newUser: value.newUser,
+        });
 
         var requestOptions = {
           method: 'PUT',

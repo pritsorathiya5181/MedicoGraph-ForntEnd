@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {
   Alert,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,6 +14,7 @@ import * as homeAction from '../../action/homeAction';
 import * as CONSTANT from '../../utils/Constants';
 import Scale, {verticalScale} from '../../utils/Scale';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-community/async-storage';
 
 class FamilyHome extends Component {
   constructor(props) {
@@ -26,25 +28,63 @@ class FamilyHome extends Component {
   }
 
   componentDidMount() {
+    this.recordsAPILits();
+  }
+
+  UNSAFE_componentWillMount() {
+    this._unsubscribe = this.props.navigation.addListener('focus', () => {
+      // do something
+      this.recordsAPILits();
+    });
+  }
+  UNSAFE_componentWillReceiveProps(props) {
+    let data = props && props.familyData;
+    this.setState({
+      state: data,
+    });
+  }
+
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
+  recordsAPILits() {
     this.props.action
       .getFamilyInfo()
       .then(res => {
         console.log('res===>', res);
         this.setState({
-          userData: res.data[0].user,
-          fatherData: res.data[0].father,
-          motherData: res.data[0].mother,
-          siblingsData: res.data[0].sibling,
+          userData: res.data[0]?.user,
+          fatherData: res.data[0]?.father,
+          motherData: res.data[0]?.mother,
+          siblingsData: res.data[0]?.sibling,
         });
       })
       .catch(err => console.log(err));
+  }
+
+  navigateToAddFamily() {
+    const userData = this.state.userData;
+    const motherData = this.state.motherData;
+    const fatherData = this.state.fatherData;
+    const siblingsData = this.state.siblingsData;
+
+    if (userData && fatherData && motherData && siblingsData) {
+      this.props.navigation.navigate('addFamily', {
+        father: fatherData.email,
+        mother: motherData.email,
+        sibling: siblingsData,
+      });
+    } else {
+      this.props.navigation.navigate('addFamily');
+    }
   }
 
   addIconView() {
     return (
       <TouchableOpacity
         style={styles.addIconView}
-        onPress={() => this.props.navigation.navigate('addFamily')}>
+        onPress={() => this.navigateToAddFamily()}>
         <Ionicons name="add" color={CONSTANT.DEFAULT_WHITE} size={20} />
       </TouchableOpacity>
     );
@@ -56,16 +96,28 @@ class FamilyHome extends Component {
         <Text style={{fontSize: 15, marginTop: 10}}>{title}</Text>
         <View style={styles.personalView}>
           <View style={{flexDirection: 'row'}}>
-            <View style={{width: 70, height: 70, borderRadius: 35}}>
+            <View
+              style={{
+                width: 70,
+                height: 70,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderColor: 'black',
+                borderWidth: 1,
+                borderRadius: 35,
+                overflow: 'hidden',
+              }}>
               <Image
-                source={{
-                  uri: data.avatar,
-                }}
-                style={{width: 70, height: 70}}
-                resizeMode="contain"
+                source={
+                  title == 'Mother'
+                    ? require('../../../assets/woman.png')
+                    : require('../../../assets/man.png')
+                }
+                style={{width: 50, height: 50}}
+                resizeMode="cover"
               />
             </View>
-            <View>
+            <View style={{paddingLeft: 20}}>
               <Text>{data.first_name + ' ' + data.last_name}</Text>
               <Text>{data.email}</Text>
               <Text style={{fontWeight: 'bold', marginTop: 10}}>
@@ -78,6 +130,11 @@ class FamilyHome extends Component {
     );
   }
 
+  async doLogout() {
+    await AsyncStorage.setItem('USER_TOKEN', '');
+    this.props.navigation.replace('Splash');
+  }
+
   renderFamilyInfo() {
     const userData = this.state.userData;
     const motherData = this.state.motherData;
@@ -86,21 +143,48 @@ class FamilyHome extends Component {
 
     return (
       <View style={{paddingHorizontal: Scale(30)}}>
-        <Text
+        <View
           style={{
-            fontWeight: 'bold',
-            marginTop: 15,
-            color: CONSTANT.THEME_GREEN,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}>
-          Family Information
-        </Text>
+          <Text
+            style={{
+              fontWeight: 'bold',
+              marginTop: 15,
+              color: CONSTANT.THEME_GREEN,
+            }}>
+            Family Information
+          </Text>
 
-        {this.renderDetailsView('Personal', userData)}
-        {this.renderDetailsView('Mother', motherData)}
-        {this.renderDetailsView('Father', fatherData)}
-        {siblingsData.map((item, index) => {
-          return this.renderDetailsView('Sibling', item);
-        })}
+          <TouchableOpacity onPress={() => this.doLogout()}>
+            <Text
+              style={{
+                fontWeight: 'bold',
+                marginTop: 15,
+                color: CONSTANT.THEME_GREEN,
+              }}>
+              Logout
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={{
+            paddingVertical: verticalScale(15),
+            marginBottom: verticalScale(50),
+          }}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {userData && this.renderDetailsView('Personal', userData)}
+            {motherData && this.renderDetailsView('Mother', motherData)}
+            {fatherData && this.renderDetailsView('Father', fatherData)}
+            {siblingsData &&
+              siblingsData.map((item, index) => {
+                return this.renderDetailsView('Sibling', item);
+              })}
+          </ScrollView>
+        </View>
       </View>
     );
   }
@@ -134,8 +218,8 @@ export default connect(mapStateToProps, mapDispatchToProps)(FamilyHome);
 
 const styles = StyleSheet.create({
   personalView: {
-    paddingHorizontal: Scale(30),
-    borderBottomWidth: 1,
+    // paddingHorizontal: Scale(30),
+    borderBottomWidth: 2,
     borderBottomColor: '#f2f2f2',
     paddingVertical: verticalScale(10),
   },

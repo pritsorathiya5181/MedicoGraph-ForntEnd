@@ -54,6 +54,15 @@ class SecondScreen extends React.Component {
   }
 
   createMedicalInfo() {
+    this.props.action
+      .createPersonalInfo({
+        newUser: false,
+      })
+      .then(result => {
+        console.log(result);
+      })
+      .catch(err => console.log('error===>', err));
+
     const {data} = this.state;
     const raw = {
       bloodGroup: data.bloodGroup,

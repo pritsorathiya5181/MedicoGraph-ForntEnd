@@ -29,7 +29,7 @@ class AddRecords extends React.Component {
         lBloodPressure: 0,
         rbcCount: 0,
         wbcCount: 0,
-        notes: '',
+        notes: 'Test was qeqefantastic',
       },
     };
   }
@@ -43,6 +43,7 @@ class AddRecords extends React.Component {
 
   saveRecord() {
     const {records} = this.state;
+    console.log('Work====', records);
     var raw = JSON.stringify({
       hemoglobin: records.hemoglobin | 0,
       sugarLevel: records.sugarLevel | 0,
@@ -50,8 +51,8 @@ class AddRecords extends React.Component {
       wbcCount: records.wbcCount | 0,
       lBloodPressure: records.lBloodPressure | 0,
       hBloodPressure: records.hBloodPressure | 0,
-      title: 'New Record',
-      notes: records.notes | 'Test was fantastic',
+      title: records.title,
+      notes: records.notes,
     });
 
     this.props.action
@@ -77,8 +78,8 @@ class AddRecords extends React.Component {
       wbcCount: records.wbcCount | 0,
       lBloodPressure: records.lBloodPressure | 0,
       hBloodPressure: records.hBloodPressure | 0,
-      title: 'New Record',
-      notes: records.notes | 'Test was fantastic',
+      title: records.title,
+      notes: records.notes,
     });
 
     this.props.action
@@ -152,6 +153,25 @@ class AddRecords extends React.Component {
 
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={{paddingHorizontal: Scale(30)}}>
+            <Text style={[styles.titleText]}>Title</Text>
+            <View style={styles.action}>
+              <AntDesign name="disconnect" color="#05375a" size={20} />
+              <TextInput
+                placeholder="Title"
+                style={styles.textInput}
+                autoCapitalize="none"
+                value={records.title?.toString()}
+                onChangeText={val =>
+                  this.setState({
+                    records: {
+                      ...records,
+                      title: val,
+                    },
+                  })
+                }
+              />
+            </View>
+
             <Text style={[styles.titleText]}>Hemoglobin Level</Text>
             <View style={styles.action}>
               <AntDesign name="disconnect" color="#05375a" size={20} />

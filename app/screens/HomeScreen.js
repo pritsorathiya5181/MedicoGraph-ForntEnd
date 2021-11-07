@@ -1,5 +1,11 @@
 import * as React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as CONSTANT from '../utils/Constants';
 import Scale, {verticalScale} from '../utils/Scale';
@@ -19,6 +25,27 @@ class HomeScreen extends React.Component {
   }
 
   componentDidMount() {
+    this.getRecordsLists();
+  }
+
+  UNSAFE_componentWillMount() {
+    this._unsubscribe = this.props.navigation.addListener('focus', () => {
+      // do something
+      this.getRecordsLists();
+    });
+  }
+  UNSAFE_componentWillReceiveProps(props) {
+    let data = props && props.recordsList;
+    this.setState({
+      state: data,
+    });
+  }
+
+  componentWillUnmount() {
+    this._unsubscribe;
+  }
+
+  getRecordsLists() {
     this.props.action
       .getRecords()
       .then(res => {
@@ -64,25 +91,28 @@ class HomeScreen extends React.Component {
       this.state.records.length > 3
         ? this.state.records.slice(3, this.state.records.length)
         : this.state.records;
-    return records.map((item, index) => {
-      return (
-        <TouchableOpacity
-          style={styles.listItem}
-          onPress={() =>
-            this.props.navigation.navigate('addRecords', {record: item})
-          }>
-          <View style={{width: '60%'}}>
-            <Text style={{fontWeight: 'bold'}}>{item.title}</Text>
-            <Text numberOfLines={1} ellipsizeMode="tail">
-              {item.notes}
-            </Text>
-          </View>
-          <View style={{flex: 1, paddingLeft: Scale(10)}}>
-            <Text>{moment(item.date).format('MM/DD/YYYY')}</Text>
-          </View>
-        </TouchableOpacity>
-      );
-    });
+    return (
+      records?.length >= 1 &&
+      records.map((item, index) => {
+        return (
+          <TouchableOpacity
+            style={styles.listItem}
+            onPress={() =>
+              this.props.navigation.navigate('addRecords', {record: item})
+            }>
+            <View style={{width: '60%'}}>
+              <Text style={{fontWeight: 'bold'}}>{item.title}</Text>
+              <Text numberOfLines={1} ellipsizeMode="tail">
+                {item.notes}
+              </Text>
+            </View>
+            <View style={{flex: 1, paddingLeft: Scale(10)}}>
+              <Text>{moment(item.date).format('MM/DD/YYYY')}</Text>
+            </View>
+          </TouchableOpacity>
+        );
+      })
+    );
   }
 
   render() {
@@ -99,12 +129,14 @@ class HomeScreen extends React.Component {
           </View>
         )}
         {this.state.records.length > 3 && this.last3RecordsList()}
+
         <View
           style={{paddingHorizontal: Scale(30), marginTop: verticalScale(15)}}>
-          {/* <Text>Last 3 added records</Text> */}
           <Text style={styles.titleText}>Previous Records</Text>
         </View>
-        {this.recordsList()}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {this.recordsList()}
+        </ScrollView>
         {this.addIconView()}
       </View>
     );

@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, TouchableOpacity, Text, StyleSheet} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import * as CONSTANT from '../utils/Constants';
 
@@ -36,7 +37,7 @@ export default class BottomTab extends React.Component {
                 }}
                 style={styles.centerView}>
                 <View style={[styles.boxView]}>
-                  <Ionicons name="add" color={CONSTANT.THEME_GREEN} size={20} />
+                  <Entypo name="list" color={CONSTANT.THEME_GREEN} size={20} />
                 </View>
                 <Text
                   style={[
@@ -58,7 +59,7 @@ export default class BottomTab extends React.Component {
                 }}
                 style={styles.centerView}>
                 <View style={[styles.boxView]}>
-                  <Ionicons name="add" color={CONSTANT.THEME_GREEN} size={20} />
+                  <Entypo name="list" color={CONSTANT.THEME_GREEN} size={20} />
                 </View>
                 <Text
                   style={[

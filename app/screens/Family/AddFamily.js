@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,9 +13,9 @@ import {bindActionCreators} from 'redux';
 import * as homeAction from '../../action/homeAction';
 import * as CONSTANT from '../../utils/Constants';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Scale, {verticalScale} from '../../utils/Scale';
 
+var siblingsList = [];
 class AddFamily extends Component {
   constructor(props) {
     super(props);
@@ -25,7 +26,21 @@ class AddFamily extends Component {
         mother: '',
         sibling: [],
       },
+      siblingCount: 0,
     };
+  }
+
+  componentDidMount() {
+    console.log('data==', this.props.route.params?.sibling);
+    this.setState({
+      editRecord: typeof this.props.route.params == 'undefined' ? false : true,
+      family: {
+        father: this.props.route.params?.father,
+        mother: this.props.route.params?.mother,
+        sibling: this.props.route.params?.sibling.map(item => item.email),
+      },
+    });
+    siblingsList = this.state.sibling;
   }
 
   configueHeader() {
@@ -73,7 +88,8 @@ class AddFamily extends Component {
       .then(res => {
         console.log('res', res);
         if (res.success) {
-          //   this.props.navigation.replace('Home');
+          // this.props.navigation.replace('Home');
+          this.props.navigation.goBack();
         } else {
           Alert.alert(res.message);
         }
@@ -83,6 +99,8 @@ class AddFamily extends Component {
 
   updateRecord() {
     const {family} = this.state;
+    console.log('family===>', family);
+
     var raw = JSON.stringify({
       father: family.father,
       mother: family.mother,
@@ -90,11 +108,11 @@ class AddFamily extends Component {
     });
 
     this.props.action
-      .updateRecord(raw)
+      .updateFamily(raw)
       .then(res => {
         console.log('res', res);
         if (res.success) {
-          this.props.navigation.replace('Home');
+          this.props.navigation.goBack();
         } else {
           Alert.alert(res.message);
         }
@@ -104,7 +122,7 @@ class AddFamily extends Component {
 
   deleteRecord() {
     var raw = JSON.stringify({
-      id: this.state.records._id,
+      id: this.state.family?._id,
     });
 
     this.props.action
@@ -135,11 +153,10 @@ class AddFamily extends Component {
                 placeholder="Father email"
                 style={styles.textInput}
                 autoCapitalize="none"
-                keyboardType="number-pad"
                 value={family.father}
                 onChangeText={val =>
                   this.setState({
-                    father: {
+                    family: {
                       ...family,
                       father: val,
                     },
@@ -155,11 +172,10 @@ class AddFamily extends Component {
                 placeholder="Mother Email"
                 style={styles.textInput}
                 autoCapitalize="none"
-                keyboardType="number-pad"
                 value={family.mother}
                 onChangeText={val =>
                   this.setState({
-                    mother: {
+                    family: {
                       ...family,
                       mother: val,
                     },
@@ -167,11 +183,70 @@ class AddFamily extends Component {
                 }
               />
             </View>
+
+            {family.sibling?.map((item, index) => {
+              return (
+                <>
+                  <Text style={[styles.titleText]}>Sibling's Email</Text>
+                  <View style={styles.action}>
+                    <AntDesign name="mail" color="#05375a" size={20} />
+                    <TextInput
+                      placeholder="Sibling's Email"
+                      style={styles.textInput}
+                      autoCapitalize="none"
+                      value={family.sibling[index]}
+                      onChangeText={val =>
+                        this.setState({
+                          family: {
+                            ...family,
+                            sibling: family.sibling.map((item, i) =>
+                              i == index ? val : item,
+                            ),
+                          },
+                        })
+                      }
+                    />
+                  </View>
+                </>
+              );
+            })}
+
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 50,
+                borderColor: CONSTANT.THEME_GREEN,
+                borderWidth: 2,
+                borderRadius: 10,
+              }}
+              onPress={() => {
+                this.setState({
+                  siblingCount: this.state.siblingCount + 1,
+                  family: {
+                    ...family,
+                    sibling: [...(family.sibling ? family.sibling : []), ''],
+                  },
+                });
+                siblingsList = [...(siblingsList ? siblingsList : []), 'hello'];
+              }}>
+              <AntDesign name="addusergroup" color="#05375a" size={20} />
+              <Text
+                style={{
+                  color: CONSTANT.THEME_GREEN,
+                  fontSize: 15,
+                  fontWeight: 'bold',
+                  paddingLeft: 15,
+                }}>
+                Add Siblings
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
 
         {this.saveRecordView()}
-        {this.state.editRecord && this.deleteRecordView()}
+        {/* {this.state.editRecord && this.deleteRecordView()} */}
       </View>
     );
   }
